@@ -132,6 +132,7 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 puppeteer.use(StealthPlugin());
 
@@ -187,7 +188,7 @@ async function checkIrctc() {
         const inputs = await page.$$('input[id$="-input"]');
         if (inputs.length > 1) {
             await inputs[1].click();
-            await inputs[1].type('PNVL', { delay: 150 });
+            await inputs[1].type('CLT', { delay: 150 });
             await new Promise(r => setTimeout(r, 1000));
             await page.keyboard.press('ArrowDown');
             await page.keyboard.press('Enter');
@@ -213,6 +214,7 @@ async function checkIrctc() {
         if (result === 'NOT_READY') {
             const msg = await page.$eval('span#client-snackbar', el => el.innerText);
             console.log(`Result: ${msg}`);
+            //await sendEmail("ALERT: IRCTC Chart Not Ready", "The chart for 22660 is not available.");
         } else {
             console.log("Result: CHART PREPARED!");
             await sendEmail("ALERT: IRCTC Chart Ready", "The chart for 22660 is now available.");
@@ -232,6 +234,19 @@ async function checkIrctc() {
 
 async function sendEmail(subject, text) {
     // Add your nodemailer transporter config here
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER, 
+            pass: process.env.EMAIL_PASS
+        }
+    });
+    await transporter.sendMail({
+        from: '"IRCTC Monitor" <trashcandump0@gmail.com>',
+        to: 'sharukhashfaq64@gmail.com',
+        subject: subject,
+        text: text
+    });
     console.log(`Simulating Email: ${subject}`);
 }
 

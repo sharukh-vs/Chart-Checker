@@ -1,0 +1,28 @@
+name: IRCTC Chart Monitor
+
+on:
+  schedule:
+    # Runs every 5 minutes (Note: GitHub might delay this to every 10-15 mins on free tier)
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allows you to run it manually for testing
+
+jobs:
+  check-charts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install puppeteer-extra puppeteer-extra-plugin-stealth nodemailer
+
+      - name: Run IRCTC Script
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+        run: node index.js
