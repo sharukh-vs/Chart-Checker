@@ -83,7 +83,7 @@
 //         await page.evaluate(() => {
 //             const btn = [...document.querySelectorAll('button')].find(b => b.innerText.includes('Get Train Chart'));
 //             console.log(btn);
-            
+
 //             if (btn){
 //                 btn.click();
 //                 console.log("Button clicked!");
@@ -159,10 +159,27 @@ async function checkIrctc() {
 
         // 2. Handle Journey Date
         console.log("Verifying Date...");
-        const dateSelector = 'input[readonly][value*="-202"]';
-        await page.waitForSelector(dateSelector);
-        // We ensure the date is correct. Even if default is fine, clicking it helps trigger React state.
-        await page.click(dateSelector); 
+        // const dateSelector = 'input[readonly][value*="-202"]';
+        // await page.waitForSelector(dateSelector);
+        // // We ensure the date is correct. Even if default is fine, clicking it helps trigger React state.
+        // await page.click(dateSelector); 
+        const targetDate = "11-02-2026";
+
+        console.log(`Changing date to ${targetDate}...`);
+
+        await page.evaluate((date) => {
+            const dateInput = document.querySelector('input[readonly][value*="-202"]');
+            if (dateInput) {
+                // 1. Force the value
+                dateInput.value = date;
+
+                // 2. Trigger "Input" and "Change" events so React sees the update
+                dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+                dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }, targetDate);
+
+        console.log("Date updated successfully!");
 
         // 3. Selecting Station
         console.log("Selecting Station...");
@@ -170,7 +187,7 @@ async function checkIrctc() {
         const inputs = await page.$$('input[id$="-input"]');
         if (inputs.length > 1) {
             await inputs[1].click();
-            await inputs[1].type('CLT', { delay: 150 });
+            await inputs[1].type('PNVL', { delay: 150 });
             await new Promise(r => setTimeout(r, 1000));
             await page.keyboard.press('ArrowDown');
             await page.keyboard.press('Enter');
