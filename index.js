@@ -151,12 +151,12 @@ async function checkIrctc() {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     try {
         console.log("Checking IRCTC for charts....");
-        await page.goto('https://www.irctc.co.in/online-charts/', { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.goto('https://www.irctc.co.in/online-charts/', { waitUntil: 'domcontentloaded', timeout: 60000 });
 
         // 1. Enter Train Number
         console.log("Entering train number...");
         const trainInput = 'input[id$="-input"]';
-        await page.waitForSelector(trainInput);
+        await page.waitForSelector(trainInput, { visible: true, timeout: 30000 });
         await page.click(trainInput);
         await page.type(trainInput, '22660', { delay: 100 });
         await new Promise(r => setTimeout(r, 1000)); // Wait for search results
@@ -228,6 +228,10 @@ async function checkIrctc() {
 
     } catch (error) {
         console.error("Script Error:", error.message);
+        const content = await page.content();
+        if (content.includes("Access Denied") || content.includes("Forbidden")) {
+            console.log("CRITICAL: IRCTC is blocking the GitHub IP address.");
+        }
         // Take a screenshot to see why it timed out
         if (!page.isClosed()) {
         try {

@@ -3,7 +3,7 @@ name: IRCTC Chart Monitor
 on:
   schedule:
     # Runs every 5 minutes (Note: GitHub might delay this to every 10-15 mins on free tier)
-    - cron: '*/5 * * * *'
+    - cron: '*/20 * * * *'
   workflow_dispatch: # Allows you to run it manually for testing
 
 jobs:
