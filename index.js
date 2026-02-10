@@ -139,13 +139,19 @@ puppeteer.use(StealthPlugin());
 async function checkIrctc() {
     const browser = await puppeteer.launch({
         headless: "new", // Set to true once you verify it works
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-http2', // Force HTTP/1.1 to avoid the Protocol Error
+            '--window-size=1920,1080'
+        ]
     });
     const page = await browser.newPage();
-
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     try {
         console.log("Checking IRCTC for charts....");
-        await page.goto('https://www.irctc.co.in/online-charts/', { waitUntil: 'networkidle2' });
+        await page.goto('https://www.irctc.co.in/online-charts/', { waitUntil: 'networkidle2', timeout: 60000 });
 
         // 1. Enter Train Number
         console.log("Entering train number...");
@@ -223,8 +229,14 @@ async function checkIrctc() {
     } catch (error) {
         console.error("Script Error:", error.message);
         // Take a screenshot to see why it timed out
-        await page.screenshot({ path: 'error_debug.png' });
-        console.log("Screenshot saved as error_debug.png");
+        if (!page.isClosed()) {
+        try {
+            await page.screenshot({ path: 'error_debug.png' });
+            console.log("Screenshot saved as error_debug.png");
+        } catch (screenshotError) {
+            console.error("Could not capture screenshot:", screenshotError.message);
+        }
+    }
     } finally {
         // Keep browser open for a few seconds to see the result visually
         await new Promise(r => setTimeout(r, 3000));
