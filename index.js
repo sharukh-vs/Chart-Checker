@@ -132,14 +132,14 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+//require('dotenv').config();
 
 puppeteer.use(StealthPlugin());
 
 async function checkIrctc() {
     const browser = await puppeteer.launch({
-        headless: false, // Set to true once you verify it works
-        defaultViewport: null
+        headless: "new", // Set to true once you verify it works
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
 
@@ -242,12 +242,12 @@ async function sendEmail(subject, text) {
         }
     });
     await transporter.sendMail({
-        from: '"IRCTC Monitor" <trashcandump0@gmail.com>',
-        to: 'sharukhashfaq64@gmail.com',
+        from: `"IRCTC Monitor" <${process.env.EMAIL_USER}>`,
+        to: process.env.RECIPIENT_EMAIL,
         subject: subject,
         text: text
     });
-    console.log(`Simulating Email: ${subject}`);
+    console.log(`Email Sent: ${subject}`);
 }
 
 checkIrctc();
